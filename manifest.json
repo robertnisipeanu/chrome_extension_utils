@@ -1,0 +1,26 @@
+{
+    "name": "@robertnisipeanu/Chrome Utils Extension",
+    "version": "1.0",
+    "manifest_version": 2,
+    "content_scripts": [
+        {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"]
+        }
+    ],
+    "browser_action": {
+        "default_popup": "index.html",
+        "default_title": "Copy",
+        "default_icon": "icon512.png"
+    },
+    "background": {
+        "scripts": ["background.js"]
+    },
+    "permissions": [
+        "clipboardRead",
+        "clipboardWrite"
+    ],
+    "icons": {
+        "128": "icon.png"
+    }
+}
