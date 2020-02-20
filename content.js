@@ -1,18 +1,23 @@
 
+document.onkeydown = function(event) {
+
+    if(event.ctrlKey && event.keyCode == 67){
+        event.preventDefault();
+        
+        chrome.runtime.sendMessage({
+            type: 'copy'
+        }, function(response) {
+            if(response.status === "success")
+                document.execCommand("copy");
+        });
+    }
+};
+
 document.addEventListener("copy", function(e) {
-    if(!getSelectionText()){
-        e.clipboardData.setData("text/plain", window.location.href);
-        e.preventDefault();
-    }
+
+    chrome.runtime.sendMessage({
+        type: "copy_verify",
+        url: window.location.href
+    });
+
 });
-
-
-function getSelectionText() {
-    var text = "";
-    if (window.getSelection) {
-        text = window.getSelection().toString();
-    } else if (document.selection && document.selection.type != "Control") {
-        text = document.selection.createRange().text;
-    }
-    return text;
-}
