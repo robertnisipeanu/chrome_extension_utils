@@ -1,61 +1,51 @@
-var copyData = [];
+var copyData;
 var sendFinalResponse;
 var url;
-var mode;
 
-
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    if(request.type !== "copy")
-        return;
-
-
-    var pasteLocation = document.getElementById("pastelocation");
-    pasteLocation.focus();
-
-    mode = 0;
-    document.execCommand("paste");
-
-    sendResponse({status: 'success'});
-});
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if(request.type !== "copy_verify")
         return;
-    
-    var pasteLocation = document.getElementById("pastelocation");
-    pasteLocation.focus();
 
-    sendFinalResponse = sendResponse;
-    url = request.url;
-    mode = 1;
-    document.execCommand("paste");
+    // wait 5 seconds to make sure data is found in the clipboard
+    setTimeout(() => {
+        var pasteLocation = document.getElementById("pastelocation");
+        pasteLocation.focus();
+
+        sendFinalResponse = sendResponse;
+        url = request.url;
+
+        document.execCommand("paste");
+    }, 5);
 });
 
 
 
 document.addEventListener("paste", function(event) {
-    var evt = event;
 
-    var text = evt.clipboardData.getData('text/plain');
-    var html = evt.clipboardData.getData('text/html');
+    var text = event.clipboardData.getData('text/plain');
+    // var html = event.clipboardData.getData('text/html');
 
-    copyData[mode] = text;
-    console.log(copyData);
+    if(sendFinalResponse)
+        copyData = text;
 
-    if(mode == 1 && copyData[0] === copyData[1] && sendFinalResponse && url){
+    if(sendFinalResponse && copyData === "" && url){
         copyToClipboard(url);
         sendFinalResponse({status: 'success'});
     }
+    else
+        sendFinalResponse({status: 'text-selected'});
 
+    copyData = "";
     sendFinalResponse = undefined;
 });
 
 function copyToClipboard(url){
+    // Timeout for not throwing a chrome error (it thinks we are doing a copy-paste loop and blocks the command otherwise)
     setTimeout(() => {
         var copyLocation = document.getElementById("copylocation");
         copyLocation.innerHTML = url;
         copyLocation.select();
         document.execCommand("copy");
-        console.log("test", copyLocation.innerHTML);
     }, 0);
 }
